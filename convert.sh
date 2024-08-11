@@ -27,7 +27,7 @@ while read -r line || [ "$line" ]; do
       # above is disk followed by a partition number
       while {
         case "$disk" in
-          *[0-9][0-9]*|*[0-9]*) true ;;
+          *[0-9][0-9]|*[0-9]) true ;;
           *) false ;;
         esac
       }; do
@@ -37,6 +37,11 @@ while read -r line || [ "$line" ]; do
     ;;
   esac
 done < /proc/mounts
+disk="${disk%p}"
+[ -b "$disk" ] || {
+  printf 'Failed to detect disk...\n'
+  exit 1
+}
 unset line; printf '%s\n' "Active disk is $disk"
 
 [ "$(type cgpt)" ] || {
