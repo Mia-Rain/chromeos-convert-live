@@ -93,6 +93,9 @@ $(cgpt show "$disk")
 EOF
 printf '%s\n' "Current Kernel is $active_kernel_label on $disk at part number $active_kernel_partnum"
 printf '%s\n' "Opposing Kernel is $inactive_kernel_label with part number $inactive_kernel_partnum"
+case "$disk" in
+  *"mmcblk"*) disk="${disk}p"
+esac
 kernel="${disk}${active_kernel_partnum}"
 inactive_kernel="${disk}${inactive_kernel_partnum}"
 [ "$USER" = "root" ] || {
@@ -177,8 +180,9 @@ if [ ! "$(type unzip 2>/dev/null)" ]; then
   done << EOF
 $(curl -skL "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$arch/latest-releases.yaml")
 EOF
-  curl -skLO "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$arch/$file"
-  [ -e "./$file" ] || {
+  printf '%s\n' "Downloading alpine latest release mini rootfs for $arch @ $file"
+  curl -kLO "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$arch/$file"
+  [ -f "./$file" ] || {
     printf '%s\n' "$file did not download correctly..."
     exit 1
   }
