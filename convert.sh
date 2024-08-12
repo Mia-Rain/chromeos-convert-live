@@ -175,12 +175,17 @@ if [ ! "$(type unzip 2>/dev/null)" ]; then
   }
   arch="$(uname -m)"
   arch="${arch%l}"
+  unset line item
   while read -r line || [ "$line" ]; do
     line="$(trim_all "$line")"
     case "$line" in
       'title: "Mini root filesystem"') item="rootfs" ;;
       'title: '*) unset item ;;
-      'file:'*) file="${line##*file: }"; break ;;
+      'file:'*) [ "$item" = "rootfs" ] && {
+          file="${line##*file: }"
+          break
+        }
+      ;;
     esac
   done << EOF
 $(curl -skL "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$arch/latest-releases.yaml")
