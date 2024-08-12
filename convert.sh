@@ -252,7 +252,7 @@ dd status=progress < "$active_rootfs_part" > "$inactive_rootfs_part"
 printf '\nContinuing...\n'
 
 printf 'Beginning conversion on %s... This will take a while...\n' "$inactive_rootfs_part"
-mkdir -p /usr/local/inactive-local-rootfs
+mkdir -p /usr/local/inactive-local-rootfs/opt/google/touch
 inactive_local_rootfs="/usr/local/inactive-local-rootfs"
 mkdir -p /usr/local/chromeos-image-rootfs
 chromeos_image_rootfs="/usr/local/chromeos-image-rootfs"
@@ -305,6 +305,7 @@ cp -arvf "/opt/google/touch/*" "$inactive_local_rootfs/opt/google/touch/" || bai
 printf 'Restoring /lib...\n'
 cp -arvf "/lib/*" "$inactive_local_rootfs/lib" || bail
 printf 'Finished Copy...\n'
+cd /usr/local || bail
 umount "$inactive_local_rootfs" || :
 umount "$chromeos_image_rootfs" || :
 cgpt add -i "${inactive_kernel_partnum}" -T 2 -S 0 -P $((active_kernel_priority+1)) "${disk%%p*}"
