@@ -295,17 +295,21 @@ printf '\nContinuing...\n'
   printf 'cp is missing...\n'
   bail
 }
-cp -arvf "$chromeos_image_rootfs" "$inactive_local_rootfs" || bail
+cd $chromeos_image_rootfs || {
+  printf 'Failed to change path to %s\n' "$chromeos_image_rootfs"
+  exit 1
+}
+cp -arvf ./ "$inactive_local_rootfs"/ || bail
 printf 'Restoring /opt/google/touch...\n'
-cp -arvf "/opt/google/touch" "$inactive_local_rootfs" || bail
+cp -arvf "/opt/google/touch/*" "$inactive_local_rootfs/opt/google/touch/" || bail
 printf 'Restoring /lib...\n'
-cp -arvf "/lib" "$inactive_local_rootfs" || bail
+cp -arvf "/lib/*" "$inactive_local_rootfs/lib" || bail
 printf 'Finished Copy...\n'
-umount "$inactive_local_rootfs"
-umount "$chromeos_image_rootfs"
-cgpt add -i "${inactive_kernel_partnum}" -T 2 -S 0 -P $((active_kernel_priority+1))
+umount "$inactive_local_rootfs" || :
+umount "$chromeos_image_rootfs" || :
+cgpt add -i "${inactive_kernel_partnum}" -T 2 -S 0 -P $((active_kernel_priority+1)) "${disk%%p*}"
 printf 'Modified Kernel Attempts... \n'
 printf 'Reboot to test the modified rootfs...
 If boot is successful run:
-cgpt add -i %s -S1\n' "${inactive_kernel_partnum}"
+cgpt add -i %s -S1 %s\n' "${inactive_kernel_partnum}" "${disk%%p*}"
 exit 0
