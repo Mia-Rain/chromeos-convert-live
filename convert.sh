@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 trim_all() {
     # Usage: trim_all "   example   string    "
 
@@ -116,6 +117,7 @@ cd /usr/local || {
 local_kernel="${PWD}/${active_kernel_label}.blob"
 local_inactive_kernel="${PWD}/${inactive_kernel_label}.blob"
 # dump config with vbutil_kernel --verify
+unset prev_line
 while read -r line || [ "$line" ]; do
   case "$prev_line" in
     *"Config:"*)
@@ -134,11 +136,13 @@ while read -r line || [ "$line" ]; do
   esac
   prev_line="$line"
 done << EOF
-$(vbutil_kernel --verify "$inactive_kernel_label".blob)
+$(vbutil_kernel --verify "$local_inactive_kernel")
 EOF
+unset prev_line
 while read -r line || [ "$line" ]; do
   case "$prev_line" in
     *"Config:"*)
+      #printf '%s\n' "$line"
       if [ "${line}" != "${line##*PARTNROFF=}" ]; then
         line="${line##*PARTNROFF=}"; line="${line%% *}"
         # line should now only contain an offset number
@@ -154,7 +158,7 @@ while read -r line || [ "$line" ]; do
   esac
   prev_line="$line"
 done << EOF
-$(vbutil_kernel --verify "$active_kernel_label".blob)
+$(vbutil_kernel --verify "$local_kernel")
 EOF
 # check if rootfs's match somehow
 # if not copy current to inactive
