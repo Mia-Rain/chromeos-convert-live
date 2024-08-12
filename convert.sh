@@ -230,6 +230,9 @@ printf 'Downloading recovery image...\n'
 if [ ! -f "$recovery_file" ]; then
   curl -kLO --progress-bar "$recovery_link"
 fi
+if [ -f "${recovery_file%.zip}" ]; then
+  [ "$(type rm)" ] && rm -f "${recovery_file%.zip}"
+fi
 [ "$unzip" ] && unzip="unzip $recovery_file"
 [ "$unzip" ] || chroot /usr/local/chroot ./bin/sh -c "unzip $recovery_file"
 [ -f "${recovery_file%.zip}" ] || {
@@ -239,32 +242,6 @@ fi
   printf 'Failed to unzip %s...\n' "${recovery_file}"
   exit 1
 }
-if [ ! -f "${recovery_file%.zip}.sha256sum" ] && [ "$(type sha256sum)" ]; then
-  sum="$(sha256sum "${recovery_file%.zip}")"; sum="${sum%% *}"
-  printf '%s\n' "$sum" > "${recovery_file%.zip}.sha256sum"
-else
-  printf 'Unable to produce checksum for %s...\n' "$recovery_file"
-fi
-
-if [ -f "${recovery_file%.zip}.sha256sum" ] && [ "$(type sha256sum)" ]; then
-  read -r sum < "${recovery_file%.zip}.sha256sum"
-  sum_check="$(sha256sum "${recovery_file%.zip}")"; sum="${sum%% *}"
-  if [ "$sum" != "${sum_check}" ]; then
-    [ "$(type rm)" ] || {
-      printf '%s has become corrupted \n Please Manually remove it and rerun this script...\n' "${recovery_file%.zip}"
-      exit 1
-    }
-    rm "${recovery_file%.zip}"
-    [ "$unzip" ] || chroot /usr/local/chroot ./bin/sh -c "unzip -v $recovery_file"
-    [ -f "${recovery_file%.zip}" ] || {
-      ${unzip}
-    }
-    [ -f "${recovery_file%.zip}" ] || {
-      printf 'Failed to unzip %s...\n' "${recovery_file}"
-      exit 1
-    }
-  fi
-fi
 
 printf 'Overwriting inactive rootfs with active one... This will take a while...\n'
 printf 'Proceed? [y/n]: '
