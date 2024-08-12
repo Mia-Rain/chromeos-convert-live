@@ -147,7 +147,7 @@ while read -r line || [ "$line" ]; do
         line="${line##*PARTNROFF=}"; line="${line%% *}"
         # line should now only contain an offset number
         rootfs_partnum=$((active_kernel_partnum+line))
-        printf '%s\n' "Inactive rootfs is at ${disk}${rootfs_partnum}"
+        printf '%s\n' "Active rootfs is at ${disk}${rootfs_partnum}"
         active_rootfs_part="${disk}${rootfs_partnum}"
         break
       else
@@ -230,8 +230,8 @@ printf 'Downloading recovery image...\n'
 if [ ! -f "$recovery_file" ]; then
   curl -kLO --progress-bar "$recovery_link"
 fi
-[ "$unzip" ] && unzip="unzip -v $recovery_file"
-[ "$unzip" ] || chroot /usr/local/chroot ./bin/sh -c "unzip -v $recovery_file"
+[ "$unzip" ] && unzip="unzip $recovery_file"
+[ "$unzip" ] || chroot /usr/local/chroot ./bin/sh -c "unzip $recovery_file"
 [ -f "${recovery_file%.zip}" ] || {
   ${unzip}
 }
@@ -267,9 +267,10 @@ if [ -f "${recovery_file%.zip}.sha256sum" ] && [ "$(type sha256sum)" ]; then
 fi
 
 printf 'Overwriting inactive rootfs with active one... This will take a while...\n'
-printf 'Proceed? [y\n]: '
+printf 'Proceed? [y/n]: '
 read -r answer
-[ "$answer" != "y" ] || exit 1
+printf '%s\n' "$answer"
+[ "$answer" != "y" ] && exit 1
 dd status=progress < "$active_rootfs_part" > "$inactive_rootfs_part"
 printf '\nContinuing...\n'
 
