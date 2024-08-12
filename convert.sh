@@ -218,7 +218,7 @@ while read -r line || [ "$line" ]; do
     *"data-chrome="*)
       line="${line##*data-chrome="$version"}"; line="${line%%.zip*}"
       line="${line##*href=}"; recovery_link="$line.zip"
-      recovery_file="${line#*recovery/}.zip"
+      recovery_file="${recovery_link#*recovery/}"
       printf 'Found recovery image for %s with chrome version %s at %s\n' "$codename" "$version" "$recovery_link"
       break
       ;;
@@ -230,8 +230,6 @@ printf 'Downloading recovery image...\n'
 if [ ! -f "$recovery_file" ]; then
   curl -kLO --progress-bar "$recovery_link"
 fi
-
-recovery_file="${PWD}/${recovery_file}"
 [ "$unzip" ] && unzip="unzip -v $recovery_file"
 [ "$unzip" ] || chroot /usr/local/chroot ./bin/sh -c "unzip -v $recovery_file"
 [ -f "${recovery_file%.zip}" ] || {
