@@ -39,8 +39,8 @@ while read -r line || [ "$line" ]; do
   esac
 done < /proc/mounts
 disk="${disk%p}"
-[ -b "$disk" ] || {
-  printf 'Failed to detect disk...\n'
+[ -e "$disk" -o -e "${disk%p}p1" ] || {
+  printf 'Failed to detect disk; Was %s...\n' "$disk"
   exit 1
 }
 unset line; printf '%s\n' "Active disk is $disk"
