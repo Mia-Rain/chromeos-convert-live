@@ -174,6 +174,7 @@ if [ ! "$(type unzip 2>/dev/null)" ]; then
     exit 1
   }
   arch="$(uname -m)"
+  arch="${arch%l}"
   while read -r line || [ "$line" ]; do
     line="$(trim_all "$line")"
     case "$line" in
